@@ -96,6 +96,11 @@ DATABASES = {
             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),  # Database file location
         }
 }
+# Custom User Model
+# -------------------   
+# Point to the custom user model defined in core/models.py
+# This allows for extending the default user model with additional fields.
+AUTH_USER_MODEL = 'core.User'  # Point to your custom user model
 
 AUTH_PASSWORD_VALIDATORS = [
     # Validator 1: Checks if password is too similar to user attributes
