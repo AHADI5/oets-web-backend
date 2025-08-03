@@ -3,17 +3,34 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 
+from django.contrib.auth.models import AbstractUser, Group, Permission
+
 class User(AbstractUser):
-    """Custom user model for learners"""
+    #  Custom user model extending AbstractUser
+    
     phone = models.CharField(max_length=20, blank=True)
     education_level = models.CharField(max_length=100, blank=True)
     profession = models.CharField(max_length=100, blank=True)
     registration_date = models.DateField(auto_now_add=True)
     
-    class Meta:
-        verbose_name = _('User')
-        verbose_name_plural = _('Users')
-
+    # Customizing the user model to include additional fields
+    groups = models.ManyToManyField(
+        Group,
+        verbose_name='groups',
+        blank=True,
+        help_text='The groups this user belongs to.',
+        related_name='core_user_groups',  # Unique related_name
+        related_query_name='user',
+    )
+    # Custom permissions for the user
+    user_permissions = models.ManyToManyField(
+        Permission,
+        verbose_name='user permissions',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        related_name='core_user_permissions',  # Unique related_name
+        related_query_name='user',
+    )
 class Department(models.Model):
     """Language department model"""
     name = models.CharField(max_length=100)
