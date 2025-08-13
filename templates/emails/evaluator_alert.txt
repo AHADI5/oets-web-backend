@@ -1,0 +1,23 @@
+╔══════════════════════════════════════╗
+║       NEW COURSE SUBMISSION          ║
+║       REQUIRES REVIEW                ║
+╚══════════════════════════════════════╝
+
+Dear {{ evaluator.get_full_name }},
+
+A new course submission requires your attention:
+
+┌──────────────────────────────────────┐
+│  Course:      {{ course.title|truncatechars:40 }} │
+│  Submitted by:{{ course.created_by.get_full_name }} │
+│  Department:  {{ course.created_by.department.name|default:"N/A" }} │
+│  Submitted:   {{ course.updated_at|date:"M j, Y H:i" }} │
+└──────────────────────────────────────┘
+
+‼️ Action Required: Please review within 3 days
+
+► Access the submission:
+{{ settings.BASE_URL }}/admin/review/{{ course.id }}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This is an automated notification.
