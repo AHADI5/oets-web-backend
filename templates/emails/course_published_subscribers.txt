@@ -1,0 +1,13 @@
+Dear {{ subscriber.first_name }},
+
+We're excited to announce that a new course "{{ course.title }}" is now available!
+
+Course Details:
+- Title: {{ course.title }}
+- Description: {{ course.description }}
+- Duration: {{ course.duration }}
+
+Enroll now to secure your spot!
+
+Best regards,
+The {{ settings.SITE_NAME }} Team

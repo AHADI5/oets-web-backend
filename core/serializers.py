@@ -1,7 +1,7 @@
 from datetime import timezone
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
-from core.models import Course, TeamMember, CourseTeam
+from core.models import Course, TeamMember, CourseTeam, User  
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -92,39 +92,61 @@ class CourseSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'supplier_type', 'duration',
             'objectives', 'expected_income', 'contents', 'links',
             'course_summary', 'status', 'created_by', 'created_at',
-            'updated_at', 'team_members'
+            'updated_at', 'team_members', 'submission_deadline'  # Added submission_deadline
         ]
         extra_kwargs = {
             'created_at': {'read_only': True},
             'updated_at': {'read_only': True},
         }
+
     def validate(self, data):
-        """Check submission deadlines"""
+        """Check submission deadlines and status transitions"""
+        # Get the instance (for update) or create a temporary one (for create)
+        instance = self.instance or Course(**data)
+        
+        # Check submission deadlines for SUBMITTED status
         if data.get('status') == Course.Status.SUBMITTED:
-            deadline = data.get('submission_deadline') or self.instance.submission_deadline
+            deadline = data.get('submission_deadline') or instance.submission_deadline
             if deadline and timezone.now() > deadline:
                 raise serializers.ValidationError(
                     "Submission deadline has passed"
                 )
-            instance = self.instance or Course(**data)
-            if not instance.check_completeness():
+            
+            # Check if all required fields are completed
+            if not self._check_required_fields(instance, data):
                 raise serializers.ValidationError(
                     "All required fields must be completed before submission"
                 )
+        
+        # Check publishing validation for PUBLISHED status
+        if data.get('status') == Course.Status.PUBLISHED:
+            # Ensure only approved courses can be published
+            if instance.status != Course.Status.APPROVED:
+                raise serializers.ValidationError(
+                    "Only approved courses can be published"
+                )
+        
         return data
+
+    def _check_required_fields(self, instance, data):
+        """
+        Check if all required fields are completed for submission.
+        This replaces the missing check_completeness() method.
+        """
+        required_fields = ['title', 'description', 'objectives', 'contents', 'duration']
+        
+        for field in required_fields:
+            # Use the value from data if provided, otherwise from instance
+            value = data.get(field, getattr(instance, field, None))
+            
+            if not value or (isinstance(value, str) and value.strip() == ''):
+                return False
+        
+        return True
     
     def create(self, validated_data):
         """
         Create a new course instance with associated team members.
-        
-        Args:
-            validated_data: Validated course data including optional team members
-            
-        Returns:
-            Course: The newly created course instance
-            
-        Raises:
-            ValidationError: If user doesn't have permission to create courses
         """
         team_members_data = validated_data.pop('team_members', [])
         user = self.context['request'].user
@@ -135,7 +157,7 @@ class CourseSerializer(serializers.ModelSerializer):
                 "Only trainers, department heads, or admins can create courses"
             )
         
-        # Create course with default SUBMITTED status
+        # Create course with DRAFT status (not SUBMITTED as commented)
         course = Course.objects.create(
             **validated_data,
             created_by=user,
@@ -149,16 +171,6 @@ class CourseSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         """
         Update an existing course instance and its team members.
-        
-        Args:
-            instance: Existing course instance to update
-            validated_data: Validated course data including optional team members
-            
-        Returns:
-            Course: The updated course instance
-            
-        Raises:
-            ValidationError: If user doesn't have permission to update the course
         """
         team_members_data = validated_data.pop('team_members', None)
         user = self.context['request'].user
@@ -172,6 +184,7 @@ class CourseSerializer(serializers.ModelSerializer):
         # Update course fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+        
         instance.save()
         
         # Update team members if new data was provided
@@ -183,24 +196,34 @@ class CourseSerializer(serializers.ModelSerializer):
     def _handle_team_members(self, course, members_data):
         """
         Private helper method to manage course-team member relationships.
-        
-        Clears existing team members and adds new ones based on provided data.
-        Creates new TeamMember instances if they don't exist.
-        
-        Args:
-            course: Course instance to associate members with
-            members_data: List of team member dictionaries
         """
         # Clear all existing team member associations for this course
         CourseTeam.objects.filter(course=course).delete()
         
         # Create or update team members and associate them with the course
         for member_data in members_data:
-            member, _ = TeamMember.objects.get_or_create(
-                email=member_data['email'],  # Use email as unique identifier
-                defaults={
-                    'full_name': member_data['full_name'],
-                    'qualification': member_data['qualification']
-                }
-            )
-            CourseTeam.objects.create(course=course, team_member=member)
+            try:
+                member, created = TeamMember.objects.get_or_create(
+                    email=member_data['email'],  # Use email as unique identifier
+                    defaults={
+                        'full_name': member_data['full_name'],
+                        'qualification': member_data['qualification']
+                    }
+                )
+                
+                # If the member already existed, update their information
+                if not created:
+                    member.full_name = member_data['full_name']
+                    member.qualification = member_data['qualification']
+                    member.save()
+                
+                CourseTeam.objects.create(course=course, team_member=member)
+                
+            except KeyError as e:
+                raise serializers.ValidationError(
+                    f"Missing required field in team member data: {e}"
+                )
+            except Exception as e:
+                raise serializers.ValidationError(
+                    f"Error processing team member: {str(e)}"
+                )

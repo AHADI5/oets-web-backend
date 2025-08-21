@@ -1,0 +1,13 @@
+Dear {{ stakeholder.first_name }},
+
+The course "{{ course.title }}" has been successfully published.
+
+Course Details:
+- Title: {{ course.title }}
+- Created by: {{ course.created_by.get_full_name }}
+- Status: Published
+
+This course is now visible to students and available for enrollment.
+
+Best regards,
+The {{ settings.SITE_NAME }} Team
