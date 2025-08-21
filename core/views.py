@@ -13,9 +13,20 @@ from core.serializers import CustomTokenObtainPairSerializer, CourseSerializer
 
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
-
+from django.shortcuts import render
+from django.http import JsonResponse
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 # Set up logging
 logger = logging.getLogger(__name__)
+
+
+# Home page view
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def home_page(request):
+    """API documentation home page"""
+    return render(request, 'api_documentation.html')
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     """
@@ -426,3 +437,4 @@ def server_error(request):
     """500 error handler"""
     logger.error("Server error occurred")
     return JsonResponse({'error': 'Server Error'}, status=500)
+
