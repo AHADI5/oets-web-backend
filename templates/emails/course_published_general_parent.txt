@@ -1,0 +1,15 @@
+Dear {{ parent.first_name }},
+
+We're excited to announce a new learning opportunity now available for students!
+
+New Course: {{ course.title }}
+
+Course Overview:
+{{ course.description }}
+
+This {{ course.duration }} program is designed to help students develop new skills and knowledge. The course is now open for enrollment.
+
+You can view all available courses and enrollment information in your parent portal to find the perfect fit for your child's educational journey.
+
+Best regards,
+The {{ settings.SITE_NAME }} Team

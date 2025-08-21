@@ -1,0 +1,13 @@
+Dear Trainer,
+
+The course "{{ course.title }}" has been published and is now visible to students.
+
+Course Details:
+- Title: {{ course.title }}
+- Description: {{ course.description }}
+- Duration: {{ course.duration }}
+
+Thank you for your contribution!
+
+Best regards,
+The {{ settings.SITE_NAME }} Team

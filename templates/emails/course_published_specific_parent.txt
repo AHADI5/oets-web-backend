@@ -1,0 +1,15 @@
+Dear {{ parent.first_name }},
+
+We're pleased to inform you about a new learning opportunity for {{ learner.first_name }}!
+
+New Course: {{ course.title }}
+
+Course Overview:
+{{ course.description }}
+
+This {{ course.duration }} program is designed to help students like {{ learner.first_name }} develop new skills and knowledge in a supportive learning environment. The course is now open for enrollment.
+
+We believe this could be a valuable educational experience for {{ learner.first_name }}. You can view the course details and enrollment information in your parent portal.
+
+Best regards,
+The {{ settings.SITE_NAME }} Team

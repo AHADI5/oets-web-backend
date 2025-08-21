@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OETS API Documentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --light-bg: #f8f9fa;
+            --light-text: #212529;
+            --dark-bg: #121212;
+            --dark-text: #e6e6e6;
+            --card-light: #ffffff;
+            --card-dark: #1e1e1e;
+            --shadow-light: 8px 8px 16px #d9d9d9, -8px -8px 16px #ffffff;
+            --shadow-dark: 8px 8px 16px #0a0a0a, -8px -8px 16px #282828;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--light-text);
+            line-height: 1.6;
+            transition: var(--transition);
+            overflow-x: hidden;
+        }
+
+        body.dark-mode {
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 30px;
+            animation: fadeIn 1s ease;
+        }
+
+        body.dark-mode header {
+            border-bottom: 1px solid #444;
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        h1 i {
+            font-size: 2rem;
+        }
+
+        .theme-toggle {
+            background: var(--light-bg);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: var(--shadow-light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        body.dark-mode .theme-toggle {
+            background: var(--dark-bg);
+            box-shadow: var(--shadow-dark);
+            color: var(--dark-text);
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .navbar {
+            position: sticky;
+            top: 0;
+            background-color: var(--card-light);
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+            margin-bottom: 30px;
+        }
+
+        body.dark-mode .navbar {
+            background-color: var(--card-dark);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding: 10px 0;
+        }
+
+        .nav-link {
+            padding: 10px 20px;
+            border-radius: 25px;
+            background: var(--light-bg);
+            color: var(--light-text);
+            text-decoration: none;
+            white-space: nowrap;
+            transition: var(--transition);
+            box-shadow: var(--shadow-light);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        body.dark-mode .nav-link {
+            background: var(--dark-bg);
+            color: var(--dark-text);
+            box-shadow: var(--shadow-dark);
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .endpoint-container {
+            margin-bottom: 40px;
+            animation: slideUp 0.5s ease;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .endpoint {
+            background-color: var(--card-light);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-light);
+            transition: var(--transition);
+            overflow: hidden;
+        }
+
+        body.dark-mode .endpoint {
+            background-color: var(--card-dark);
+            box-shadow: var(--shadow-dark);
+        }
+
+        .endpoint-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 15px 0;
+        }
+
+        .method {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            margin-right: 15px;
+            min-width: 90px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .get { background-color: #61affe; }
+        .post { background-color: #49cc90; }
+        .put { background-color: #fca130; }
+        .delete { background-color: #f93e3e; }
+
+        .endpoint-url {
+            font-family: monospace;
+            font-size: 16px;
+            flex-grow: 1;
+        }
+
+        .endpoint-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+
+        .endpoint-content.expanded {
+            max-height: 2000px;
+        }
+
+        .description {
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+
+        .auth {
+            background-color: #ffeaa7;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: monospace;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        body.dark-mode .auth {
+            background-color: #2d3436;
+            color: #ffeaa7;
+        }
+
+        .code-block {
+            background-color: #2d3436;
+            color: #dfe6e9;
+            padding: 18px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .copy-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .copy-btn:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .tabs {
+            display: flex;
+            margin: 20px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        body.dark-mode .tabs {
+            border-bottom: 1px solid #444;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .tab.active {
+            border-bottom: 3px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .request-body {
+            width: 100%;
+            min-height: 180px;
+            font-family: 'Fira Code', monospace;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background-color: #f8f9fa;
+            resize: vertical;
+            font-size: 14px;
+            line-height: 1.5;
+            transition: var(--transition);
+        }
+
+        body.dark-mode .request-body {
+            background-color: #2d3436;
+            color: #dfe6e9;
+            border: 1px solid #444;
+        }
+
+        .test-area {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px dashed #ddd;
+        }
+
+        body.dark-mode .test-area {
+            border-top: 1px dashed #444;
+        }
+
+        .test-btn {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .test-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .response {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            min-height: 120px;
+            font-family: 'Fira Code', monospace;
+            white-space: pre-wrap;
+            font-size: 14px;
+            line-height: 1.5;
+            transition: var(--transition);
+        }
+
+        body.dark-mode .response {
+            background-color: #2d3436;
+            color: #dfe6e9;
+        }
+
+        .highlight {
+            background-color: rgba(67, 97, 238, 0.1);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        body.dark-mode .highlight {
+            background-color: rgba(67, 97, 238, 0.2);
+        }
+
+        .feature-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            font-size: 0.8rem;
+            margin-left: 15px;
+            vertical-align: middle;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .endpoint-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .method {
+                margin-bottom: 10px;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 50px;
+            border-top: 1px solid #ddd;
+            color: #6c757d;
+        }
+
+        body.dark-mode footer {
+            border-top: 1px solid #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="container">
+            <div class="nav-links">
+                <a href="#auth" class="nav-link"><i class="fas fa-key"></i> Authentication</a>
+                <a href="#courses" class="nav-link active"><i class="fas fa-book"></i> Courses</a>
+                <a href="#health" class="nav-link"><i class="fas fa-heartbeat"></i> Health Check</a>
+                <a href="#publishing" class="nav-link"><i class="fas fa-bullhorn"></i> Publishing</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-graduation-cap"></i> OETS API Documentation</h1>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i> Dark Mode
+            </button>
+        </header>
+
+        <div class="endpoint-container" id="auth">
+            <div class="section-title">
+                <i class="fas fa-key fa-lg"></i>
+                <h2>Authentication Endpoints</h2>
+            </div>
+            
+            <div class="endpoint">
+                <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                    <div>
+                        <span class="method post">POST</span>
+                        <span class="endpoint-url">/api/v1/auth/obtain/</span>
+                    </div>
+                    <span><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="endpoint-content">
+                    <div class="description">
+                        Obtain JWT token for authentication. Required for all protected endpoints.
+                    </div>
+                    <div class="auth">
+                        <i class="fas fa-lock-open"></i>
+                        Authorization: Not required
+                    </div>
+                    
+                    <div class="tabs">
+                        <div class="tab active" onclick="switchTab(this, 'body')">Body</div>
+                        <div class="tab" onclick="switchTab(this, 'response')">Response</div>
+                    </div>
+                    
+                    <div class="tab-content active" id="body">
+                        <div class="code-block">
+{
+    "username": "your_username",
+    "password": "your_password"
+}
+                        </div>
+                        <button class="copy-btn" onclick="copyContent(this)"><i class="fas fa-copy"></i> Copy Body</button>
+                    </div>
+                    
+                    <div class="tab-content" id="response">
+                        <div class="code-block">
+{
+    "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+    "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+    "user": {
+        "id": 1,
+        "email": "user@example.com",
+        "first_name": "John",
+        "last_name": "Doe",
+        "role": "FORMATEUR",
+        "department": "French Department",
+        "phone": "+1234567890",
+        "is_system_user": true
+    }
+}
+                        </div>
+                        <button class="copy-btn" onclick="copyContent(this)"><i class="fas fa-copy"></i> Copy Response</button>
+                    </div>
+                    
+                    <div class="test-area">
+                        <textarea class="request-body" placeholder="Request body">{
+    "username": "your_username",
+    "password": "your_password"
+}</textarea>
+                        <button class="test-btn" onclick="testEndpoint(this, '/api/v1/auth/obtain/', 'POST')"><i class="fas fa-play-circle"></i> Test Endpoint</button>
+                        <div class="response"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="endpoint-container" id="courses">
+            <div class="section-title">
+                <i class="fas fa-book fa-lg"></i>
+                <h2>Course Endpoints</h2>
+            </div>
+            
+            <div class="endpoint">
+                <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                    <div>
+                        <span class="method get">GET</span>
+                        <span class="endpoint-url">/api/v1/courses/</span>
+                    </div>
+                    <span><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="endpoint-content">
+                    <div class="description">
+                        List all courses (filtered by user permissions). Regular users only see courses they created, while admins and department heads see all courses.
+                    </div>
+                    <div class="auth">
+                        <i class="fas fa-lock"></i>
+                        Authorization: Bearer &lt;your_access_token&gt;
+                    </div>
+                    
+                    <div class="tabs">
+                        <div class="tab active" onclick="switchTab(this, 'response')">Response</div>
+                    </div>
+                    
+                    <div class="tab-content active" id="response">
+                        <div class="code-block">
+[
+    {
+        "id": 1,
+        "title": "Advanced French Grammar",
+        "description": "A comprehensive course on advanced French grammar concepts.",
+        "supplier_type": "INTERNAL",
+        "duration": "1 00:00:00",
+        "objectives": "Master advanced grammar concepts",
+        "expected_income": "500.00",
+        "contents": "Textbook: Advanced French Grammar by XYZ",
+        "links": "https://example.com/resources",
+        "course_summary": null,
+        "status": "DRAFT",
+        "created_by": "John Doe",
+        "created_at": "2023-10-15T08:30:00Z",
+        "updated_at": "2023-10-15T08:30:00Z",
+        "team_members": [
+            {
+                "id": 1,
+                "full_name": "Marie Curie",
+                "qualification": "PhD in French Literature",
+                "email": "marie@example.com"
+            }
+        ]
+    }
+]
+                        </div>
+                        <button class="copy-btn" onclick="copyContent(this)"><i class="fas fa-copy"></i> Copy Response</button>
+                    </div>
+                    
+                    <div class="test-area">
+                        <button class="test-btn" onclick="testEndpoint(this, '/api/v1/courses/', 'GET')"><i class="fas fa-play-circle"></i> Test Endpoint</button>
+                        <div class="response"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                    <div>
+                        <span class="method post">POST</span>
+                        <span class="endpoint-url">/api/v1/courses/</span>
+                    </div>
+                    <span><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="endpoint-content">
+                    <div class="description">
+                        Create a new course. Only trainers, department heads, or admins can create courses.
+                    </div>
+                    <div class="auth">
+                        <i class="fas fa-lock"></i>
+                        Authorization: Bearer &lt;your_access_token&gt;
+                    </div>
+                    
+                    <div class="tabs">
+                        <div class="tab active" onclick="switchTab(this, 'body')">Body</div>
+                        <div class="tab" onclick="switchTab(this, 'response')">Response</div>
+                    </div>
+                    
+                    <div class="tab-content active" id="body">
+                        <div class="code-block">
+{
+    "title": "New Course Title",
+    "description": "Course description",
+    "supplier_type": "INTERNAL",
+    "duration": "1 00:00:00",
+    "objectives": "Course learning objectives",
+    "expected_income": "1000.00",
+    "contents": "Required materials",
+    "links": "https://example.com",
+    "team_members": [
+        {
+            "full_name": "Instructor Name",
+            "qualification": "Instructor qualifications",
+            "email": "instructor@example.com"
+        }
+    ]
+}
+                        </div>
+                        <button class="copy-btn" onclick="copyContent(this)"><i class="fas fa-copy"></i> Copy Body</button>
+                    </div>
+                    
+                    <div class="tab-content" id="response">
+                        <div class="code-block">
+{
+    "id": 2,
+    "title": "New Course Title",
+    "description": "Course description",
+    "supplier_type": "INTERNAL",
+    "duration": "1 00:00:00",
+    "objectives": "Course learning objectives",
+    "expected_income": "1000.00",
+    "contents": "Required materials",
+    "links": "https://example.com",
+    "course_summary": null,
+    "status": "DRAFT",
+    "created_by": "John Doe",
+    "created_at": "2023-10-16T09:45:00Z",
+    "updated_at": "2023-10-16T09:45:00Z",
+    "team_members": [
+        {
+            "id": 2,
+            "full_name": "Instructor Name",
+            "qualification": "Instructor qualifications",
+            "email": "instructor@example.com"
+        }
+    ]
+}
+                        </div>
+                        <button class="copy-btn" onclick="copyContent(this)"><i class="fas fa-copy"></i> Copy Response</button>
+                    </div>
+                    
+                    <div class="test-area">
+                        <textarea class="request-body" placeholder="Request body">{
+    "title": "New Course Title",
+    "description": "Course description",
+    "supplier_type": "INTERNAL",
+    "duration": "1 00:00:00",
+    "objectives": "Course learning objectives",
+    "expected_income": "1000.00",
+    "contents": "Required materials",
+    "links": "https://example.com",
+    "team_members": [
+        {
+            "full_name": "Instructor Name",
+            "qualification": "Instructor qualifications",
+            "email": "instructor@example.com"
+        }
+    ]
+}</textarea>
+                        <button class="test-btn" onclick="testEndpoint(this, '/api/v1/courses/', 'POST')"><i class="fas fa-play-circle"></i> Test Endpoint</button>
+                        <div class="response"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="endpoint-container" id="publishing">
+            <div class="section-title">
+                <i class="fas fa-bullhorn fa-lg"></i>
+                <h2>Course Publishing <span class="feature-badge">NEW</span></h2>
+            </div>
+            
+            <div class="endpoint">
+                <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                    <div>
+                        <span class="method post">POST</span>
+                        <span class="endpoint-url">/api/v1/courses/{id}/publish/</span>
+                    </div>
+                    <span><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="endpoint-content">
+                    <div class="description">
+                        <p>Publish an approved course. This endpoint changes the course status to <span class="highlight">PUBLISHED</span>, making it visible to students and parents.</p>
+                        <p><strong>Precondition:</strong> The course must have <span class="highlight">APPROVED</span> status.</p>
+                        <p><strong>Permissions:</strong> Only administrators or department heads can publish courses.</p>
+                        <p><strong>Notifications:</strong> Automatically sends notifications to trainers, learners, parents, and stakeholders.</p>
+                    </div>
+                    <div class="auth">
+                        <i class="fas fa-lock"></i>
+                        Authorization: Bearer &lt;your_access_token&gt;
+                    </div>
+                    
+                    <div class="tabs">
+                        <div class="tab active" onclick="switchTab(this, 'response')">Response</div>
+                        <div class="tab" onclick="switchTab(this, 'notifications')">Notifications</div>
+                    </div>
+                    
+                    <div class="tab-content active" id="response">
+                        <div class="code-block">
+{
+    "status": "published",
+    "new_status": "PUBLISHED",
+    "course_id": 1
+}
+                        </div>
+                        <button class="copy-btn" onclick="copyContent(this)"><i class="fas fa-copy"></i> Copy Response</button>
+                    </div>
+                    
+                    <div class="tab-content" id="notifications">
+                        <div class="code-block">
+// Email notifications sent to:
+// - Internal and external trainers
+// - All active learners
+// - Parents (specific and general)
+// - Stakeholders (admins and department heads)
+
+// Example parent notification email:
+Subject: New Course for {learner_name}: {course_title}
+
+Dear {parent_name},
+
+We're pleased to inform you about a new learning opportunity for {learner_name}!
+
+New Course: {course_title}
+
+Course Overview:
+{course_description}
+
+This {course_duration} program is designed to help students like {learner_name} 
+develop new skills and knowledge in a supportive learning environment.
+
+Best regards,
+The OETS Team
+                        </div>
+                        <button class="copy-btn" onclick="copyContent(this)"><i class="fas fa-copy"></i> Copy Content</button>
+                    </div>
+                    
+                    <div class="test-area">
+                        <button class="test-btn" onclick="testEndpoint(this, '/api/v1/courses/1/publish/', 'POST')"><i class="fas fa-play-circle"></i> Test Endpoint</button>
+                        <div class="response"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                    <div>
+                        <span class="method post">POST</span>
+                        <span class="endpoint-url">/api/v1/courses/{id}/submit/</span>
+                    </div>
+                    <span><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="endpoint-content">
+                    <div class="description">
+                        Submit a draft course for review. Changes status from <span class="highlight">DRAFT</span> to <span class="highlight">SUBMITTED</span>.
+                    </div>
+                    <div class="auth">
+                        <i class="fas fa-lock"></i>
+                        Authorization: Bearer &lt;your_access_token&gt;
+                    </div>
+                    
+                    <div class="tabs">
+                        <div class="tab active" onclick="switchTab(this, 'response')">Response</div>
+                    </div>
+                    
+                    <div class="tab-content active" id="response">
+                        <div class="code-block">
+{
+    "status": "submitted",
+    "new_status": "SUBMITTED",
+    "course_id": 1
+}
+                        </div>
+                        <button class="copy-btn" onclick="copyContent(this)"><i class="fas fa-copy"></i> Copy Response</button>
+                    </div>
+                    
+                    <div class="test-area">
+                        <button class="test-btn" onclick="testEndpoint(this, '/api/v1/courses/1/submit/', 'POST')"><i class="fas fa-play-circle"></i> Test Endpoint</button>
+                        <div class="response"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="endpoint-container" id="health">
+            <div class="section-title">
+                <i class="fas fa-heartbeat fa-lg"></i>
+                <h2>Health Check Endpoint</h2>
+            </div>
+            
+            <div class="endpoint">
+                <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                    <div>
+                        <span class="method get">GET</span>
+                        <span class="endpoint-url">/api/v1/health/</span>
+                    </div>
+                    <span><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="endpoint-content">
+                    <div class="description">
+                        Check if the API service is healthy. This endpoint does not require authentication.
+                    </div>
+                    <div class="auth">
+                        <i class="fas fa-lock-open"></i>
+                        Authorization: Not required
+                    </div>
+                    
+                    <div class="tabs">
+                        <div class="tab active" onclick="switchTab(this, 'response')">Response</div>
+                    </div>
+                    
+                    <div class="tab-content active" id="response">
+                        <div class="code-block">
+{
+    "status": "healthy"
+}
+                        </div>
+                        <button class="copy-btn" onclick="copyContent(this)"><i class="fas fa-copy"></i> Copy Response</button>
+                    </div>
+                    
+                    <div class="test-area">
+                        <button class="test-btn" onclick="testEndpoint(this, '/api/v1/health/', 'GET')"><i class="fas fa-play-circle"></i> Test Endpoint</button>
+                        <div class="response"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>OETS API Documentation v2.1 • Updated with Course Publishing Feature</p>
+        </footer>
+    </div>
+
+    <script>
+        // Toggle dark/light mode
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
+            } else {
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i> Dark Mode';
+            }
+            
+            // Save preference to localStorage
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        });
+
+        // Load theme preference
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
+        }
+
+        // Toggle endpoint expansion
+        function toggleEndpoint(element) {
+            const content = element.nextElementSibling;
+            content.classList.toggle('expanded');
+            const icon = element.querySelector('.fa-chevron-down');
+            if (icon) {
+                icon.className = content.classList.contains('expanded') ? 
+                    'fas fa-chevron-up' : 'fas fa-chevron-down';
+            }
+        }
+
+        // Switch between tabs
+        function switchTab(tabElement, tabId) {
+            const tabs = tabElement.parentElement.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            tabElement.classList.add('active');
+            
+            const tabContents = tabElement.parentElement.parentElement.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+            tabElement.parentElement.parentElement.querySelector(`#${tabId}`).classList.add('active');
+        }
+
+        // Copy content to clipboard
+        function copyContent(button) {
+            const codeBlock = button.previousElementSibling;
+            const textToCopy = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        // Test endpoint (simulated)
+        function testEndpoint(button, endpoint, method) {
+            const responseArea = button.nextElementSibling;
+            responseArea.textContent = 'Testing endpoint...';
+            
+            // Add loading animation
+            responseArea.classList.add('loading');
+            
+            // Simulate API call delay
+            setTimeout(() => {
+                let response;
+                
+                if (endpoint.includes('/auth/obtain/')) {
+                    response = {
+                        refresh: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+                        access: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+                        user: {
+                            id: 1,
+                            email: "user@example.com",
+                            first_name: "John",
+                            last_name: "Doe",
+                            role: "FORMATEUR",
+                            department: "French Department",
+                            phone: "+1234567890",
+                            is_system_user: true
+                        }
+                    };
+                } else if (endpoint.includes('/auth/refresh/')) {
+                    response = {
+                        access: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+                    };
+                } else if (endpoint.includes('/courses/') && method === 'GET') {
+                    response = [
+                        {
+                            id: 1,
+                            title: "Advanced French Grammar",
+                            description: "A comprehensive course on advanced French grammar concepts.",
+                            supplier_type: "INTERNAL",
+                            duration: "1 00:00:00",
+                            objectives: "Master advanced grammar concepts",
+                            expected_income: "500.00",
+                            contents: "Textbook: Advanced French Grammar by XYZ",
+                            links: "https://example.com/resources",
+                            course_summary: null,
+                            status: "DRAFT",
+                            created_by: "John Doe",
+                            created_at: "2023-10-15T08:30:00Z",
+                            updated_at: "2023-10-15T08:30:00Z",
+                            team_members: [
+                                {
+                                    id: 1,
+                                    full_name: "Marie Curie",
+                                    qualification: "PhD in French Literature",
+                                    email: "marie@example.com"
+                                }
+                            ]
+                        }
+                    ];
+                } else if (endpoint.includes('/courses/') && method === 'POST' && !endpoint.includes('/submit') && !endpoint.includes('/publish')) {
+                    response = {
+                        id: 2,
+                        title: "New Course Title",
+                        description: "Course description",
+                        supplier_type: "INTERNAL",
+                        duration: "1 00:00:00",
+                        objectives: "Course learning objectives",
+                        expected_income: "1000.00",
+                        contents: "Required materials",
+                        links: "https://example.com",
+                        course_summary: null,
+                        status: "DRAFT",
+                        created_by: "John Doe",
+                        created_at: "2023-10-16T09:45:00Z",
+                        updated_at: "2023-10-16T09:45:00Z",
+                        team_members: [
+                            {
+                                id: 2,
+                                full_name: "Instructor Name",
+                                qualification: "Instructor qualifications",
+                                email: "instructor@example.com"
+                            }
+                        ]
+                    };
+                } else if (endpoint.includes('/submit/')) {
+                    response = {
+                        status: "submitted",
+                        new_status: "SUBMITTED",
+                        course_id: 1
+                    };
+                } else if (endpoint.includes('/publish/')) {
+                    response = {
+                        status: "published",
+                        new_status: "PUBLISHED",
+                        course_id: 1
+                    };
+                } else if (endpoint.includes('/health/')) {
+                    response = {
+                        status: "healthy"
+                    };
+                }
+                
+                responseArea.textContent = JSON.stringify(response, null, 2);
+                responseArea.classList.remove('loading');
+            }, 1500);
+        }
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                // Update active nav link
+                document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
+                this.classList.add('active');
+                
+                window.scrollTo({
+                    top: targetElement.offsetTop - 100,
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Auto-expand the publishing section on load
+        window.addEventListener('load', () => {
+            const publishingSection = document.querySelector('#publishing .endpoint');
+            if (publishingSection) {
+                publishingSection.querySelector('.endpoint-header').click();
+            }
+        });
+    </script>
+</body>
+</html>
