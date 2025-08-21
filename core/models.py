@@ -6,7 +6,6 @@ from django.core.validators import FileExtensionValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.mail import send_mail
@@ -14,6 +13,7 @@ from django.template.loader import render_to_string
 from rest_framework.authtoken.models import Token
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from django.conf import settings
 
 def validate_file_size(value):
     """
@@ -56,7 +56,39 @@ class User(AbstractUser):
         RESPONSABLE = 'RESPONSABLE', _('Responsable')
         SECRETAIRE = 'SECRETAIRE', _('Secrétaire')
         ADMIN = 'ADMIN', _('Administrateur')
-
+        MARKETING = 'MARKETING', _('Marketing')
+        PARENT = 'PARENT', _('Parent')
+        
+    
+    # Role check properties - KEEP ONLY THIS SET
+    @property
+    def is_marketing(self):
+        return self.role == self.Role.MARKETING
+    
+    @property
+    def is_parent(self):
+        return self.role == self.Role.PARENT
+    
+    @property
+    def is_responsable(self):
+        return self.role == self.Role.RESPONSABLE
+    
+    @property
+    def is_learner(self):
+        return self.role == self.Role.LEARNER
+    
+    @property
+    def is_formateur(self):
+        return self.role == self.Role.FORMATEUR
+    
+    @property
+    def is_secretaire(self):
+        return self.role == self.Role.SECRETAIRE
+    
+    @property
+    def is_admin(self):
+        return self.role == self.Role.ADMIN
+    
     # Base Fields
     phone = models.CharField(max_length=20, blank=True)
     department = models.ForeignKey(
@@ -85,27 +117,28 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.get_full_name()} ({self.get_role_display()})"
 
-    # Role check properties
-    @property
-    def is_learner(self):
-        return self.role == self.Role.LEARNER
-    
-    @property
-    def is_formateur(self):
-        return self.role == self.Role.FORMATEUR
-    
-    @property
-    def is_responsable(self):
-        return self.role == self.Role.RESPONSABLE
-    
-    @property
-    def is_secretaire(self):
-        return self.role == self.Role.SECRETAIRE
-    
-    @property
-    def is_admin(self):
-        return self.role == self.Role.ADMIN
-
+class ParentChildRelationship(models.Model):
+        """Links parents to their children (learners)"""
+        parent = models.ForeignKey(
+            User, 
+            on_delete=models.CASCADE, 
+            related_name='children_relationships',
+            limit_choices_to={'role': User.Role.PARENT}
+        )
+        child = models.ForeignKey(
+            User,
+            on_delete=models.CASCADE,
+            related_name='parent_relationships', 
+            limit_choices_to={'role': User.Role.LEARNER}
+        )
+        relationship = models.CharField(max_length=100, default="Parent/Guardian")  # e.g., Mother, Father, Guardian
+        
+        class Meta:
+            unique_together = ('parent', 'child')
+        
+        def __str__(self):
+            return f"{self.parent} -> {self.child} ({self.relationship})"
+        
 class TeamMember(models.Model):
     """External instructors not registered as system users"""
     full_name = models.CharField(max_length=255)
@@ -128,7 +161,8 @@ class Course(models.Model):
         UNDER_REVIEW = 'UNDER_REVIEW', _('Under Review')
         APPROVED = 'APPROVED', _('Approved')
         REJECTED = 'REJECTED', _('Rejected')
-
+        PUBLISHED = 'PUBLISHED', _('Published') 
+        
     # Core Fields
     title = models.CharField(max_length=255)
     description = models.TextField()
@@ -254,6 +288,17 @@ class Course(models.Model):
                 fail_silently=False,
             )
 
+    def check_completeness(self):
+        """
+        Check if all required fields are completed before submission
+        """
+        required_fields = ['title', 'description', 'objectives', 'contents', 'duration']
+        for field in required_fields:
+            value = getattr(self, field)
+            if not value or (isinstance(value, str) and value.strip() == ''):
+                return False
+        return True
+    
 class CourseTeam(models.Model):
     """Joins Courses with TeamMembers (instructors)"""
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
